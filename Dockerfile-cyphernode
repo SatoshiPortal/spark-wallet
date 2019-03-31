@@ -1,0 +1,43 @@
+FROM node:8.11-slim as builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends git
+
+# npm doesn't normally like running as root, allow it since we're in docker
+RUN npm config set unsafe-perm true
+
+# Install Spark
+WORKDIR /opt/spark/client
+COPY client/package.json client/npm-shrinkwrap.json ./
+COPY client/fonts ./fonts
+RUN npm install
+
+WORKDIR /opt/spark
+COPY package.json npm-shrinkwrap.json ./
+RUN npm install
+COPY . .
+
+# Build production NPM package
+RUN npm run dist:npm \
+ && npm prune --production \
+ && find . -mindepth 1 -maxdepth 1 \
+           ! -name '*.json' ! -name dist ! -name LICENSE ! -name node_modules ! -name scripts \
+           -exec rm -r "{}" \;
+
+
+FROM node:11.1-alpine
+
+WORKDIR /opt/spark
+
+RUN apk add --update --no-cache bash \
+ && ln -s /opt/spark/dist/cli.js /usr/bin/spark-wallet \
+ && mkdir /data \
+ && ln -s /data/lightning $HOME/.lightning
+
+COPY --from=builder /opt/spark /opt/spark
+
+ENV CONFIG=/data/spark/config TLS_PATH=/data/spark/tls TOR_PATH=/data/spark/tor COOKIE_FILE=/data/spark/cookie HOST=0.0.0.0
+
+VOLUME /data
+ENTRYPOINT [ "scripts/docker-entrypoint.sh" ]
+
+EXPOSE 9737
