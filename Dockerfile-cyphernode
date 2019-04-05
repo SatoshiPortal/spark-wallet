@@ -28,7 +28,7 @@ FROM node:11.13.0-alpine
 
 WORKDIR /opt/spark
 
-RUN apk add --update --no-cache bash inotify-tools \
+RUN apk add --update --no-cache bash xz inotify-tools \
  && ln -s /opt/spark/dist/cli.js /usr/bin/spark-wallet \
  && mkdir /data \
  && ln -s /data/lightning $HOME/.lightning
