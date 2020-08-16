@@ -1,6 +1,6 @@
-FROM node:11.13.0-slim as builder
+FROM node:12.16.0-slim as builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends git
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates gpg dirmngr wget
 
 # npm doesn't normally like running as root, allow it since we're in docker
 RUN npm config set unsafe-perm true
@@ -24,7 +24,7 @@ RUN npm run dist:npm \
            -exec rm -r "{}" \;
 
 
-FROM node:11.13.0-alpine
+FROM node:12.16.0-alpine
 
 WORKDIR /opt/spark
 
