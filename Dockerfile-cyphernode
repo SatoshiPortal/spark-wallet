@@ -1,6 +1,6 @@
 FROM node:12.16.0-slim as builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates gpg dirmngr wget
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates gpg dirmngr wget libatomic1
 
 # npm doesn't normally like running as root, allow it since we're in docker
 RUN npm config set unsafe-perm true
